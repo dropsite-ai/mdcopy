@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	copyFlag := flag.Bool("copy", true, "Copy results to clipboard (default true)")
-	dirFlag := flag.String("dir", ".", "Change starting directory (defaults to current)")
+	copyFlag := flag.Bool("copy", true, "Copy results to clipboard")
+	dirFlag := flag.String("dir", ".", "Change starting directory")
 	extFlag := flag.String("ext", "", "Comma-separated file extensions (e.g. go,txt)")
 	matchFlag := flag.String("match", "", "Comma-separated substrings that paths must match")
 	unmatchFlag := flag.String("unmatch", "", "Comma-separated substrings that paths must not match")
