@@ -47,8 +47,8 @@ release:
 		echo "Error: Release message cannot be empty."; \
 		exit 1; \
 	fi && \
-	git tag -a v$$version -m "$$message" && \
-	git push origin v$$version && \
+	git tag -a $$version -m "$$message" && \
+	git push origin $$version && \
 	goreleaser release --clean
 
 test:
