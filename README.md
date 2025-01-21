@@ -4,13 +4,20 @@ Copies files to the clipboard as markdown.
 
 ## Install
 
-Download from [releases](https://github.com/dropsite-ai/mdcopy/releases) or manually install:
+Download from [Releases](https://github.com/dropsite-ai/mdcopy/releases):
+
+```bash
+tar -xzf mdcopy_Darwin_arm64.tar.gz
+chmod +x mdcopy
+sudo mv mdcopy /usr/local/bin/
+```
+
+Or manually build and install:
 
 ```bash
 git clone git@github.com:dropsite-ai/mdcopy.git
 cd mdcopy
 make install
-mdcopy -h
 ```
 
 ## Usage
@@ -26,8 +33,6 @@ mdcopy -h
     	Comma-separated substrings that paths must match
   -unmatch string
     	Comma-separated substrings that paths must not match
-  -verbose
-    	Enable verbose logs for non-matching paths
 ```
 
 ## Test
