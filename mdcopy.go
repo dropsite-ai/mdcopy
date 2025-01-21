@@ -42,6 +42,9 @@ func Run(copyFlag bool, dir, ext, match, unmatch string, verbose bool) (string, 
 		}
 		// Check filters, then append Markdown
 		if !info.IsDir() && passFilters(relPath, exts, matches, unmatches, verbose) {
+			// Log matched file (always displayed, even if verbose == false)
+			fmt.Println("Matched file:", relPath)
+
 			out.WriteString(fmt.Sprintf("\nFile: %s\n```%s\n", relPath, langID(filepath.Ext(path))))
 			appendFile(path, &out, verbose)
 			out.WriteString("```\n")
