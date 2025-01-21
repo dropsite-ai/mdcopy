@@ -141,7 +141,8 @@ func appendFile(path string, out *strings.Builder, cmd bool) {
 }
 
 func langID(ext string) string {
-	switch strings.ToLower(strings.TrimPrefix(ext, ".")) {
+	ext = strings.ToLower(strings.TrimPrefix(ext, "."))
+	switch ext {
 	case "js":
 		return "javascript"
 	case "ts":
@@ -163,7 +164,6 @@ func langID(ext string) string {
 	case "md":
 		return "markdown"
 	default:
-		ext = strings.TrimPrefix(ext, ".")
 		if ext == "" {
 			return "text"
 		}
