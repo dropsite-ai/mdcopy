@@ -10,13 +10,12 @@ Download from [releases](https://github.com/dropsite-ai/mdcopy/releases) or manu
 git clone git@github.com:dropsite-ai/mdcopy.git
 cd mdcopy
 make install
+mdcopy -h
 ```
 
 ## Usage
 
 ```bash
-$ mdcopy -h
-Usage of mdcopy:
   -copy
     	Copy results to clipboard (default true)
   -dir string
@@ -40,7 +39,5 @@ make test
 ## Release
 
 ```bash
-git tag -a v0.1.0 -m "Release description"
-git push origin v0.1.0
-goreleaser release
+make release
 ```
