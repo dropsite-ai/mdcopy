@@ -23,12 +23,7 @@ build:
 	goreleaser release --snapshot --clean
 
 install: build
-	@if [ ! -f "$(TARGET_BINARY)" ]; then \
-		echo "Error: Binary $(TARGET_BINARY) not found."; \
-		exit 1; \
-	fi
-	sudo cp $(TARGET_BINARY) $(INSTALL_DIR)/$(BINARY_NAME)
-	echo "Installed $(BINARY_NAME) to $(INSTALL_DIR)"
+	sudo cp $(TARGET_BINARY)_*/mdcopy $(INSTALL_DIR)/$(BINARY_NAME)
 
 release:
 	@echo "Creating a new release..."
