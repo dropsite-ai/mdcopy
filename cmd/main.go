@@ -14,7 +14,6 @@ func main() {
 	extFlag := flag.String("ext", "", "Comma-separated file extensions (e.g. go,txt)")
 	matchFlag := flag.String("match", "", "Comma-separated substrings that paths must match")
 	unmatchFlag := flag.String("unmatch", "", "Comma-separated substrings that paths must not match")
-	verboseFlag := flag.Bool("verbose", false, "Enable verbose logs for non-matching paths")
 
 	flag.Parse()
 
@@ -24,7 +23,7 @@ func main() {
 		*extFlag,
 		*matchFlag,
 		*unmatchFlag,
-		*verboseFlag,
+		true,
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error:", err)

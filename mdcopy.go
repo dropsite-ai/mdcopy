@@ -14,7 +14,7 @@ import (
 // Run scans 'dir' (defaults to "."), respecting .gitignore and hidden dirs,
 // then gathers matching files in Markdown fences. If copyFlag is true, results
 // go to the clipboard. Returns the full Markdown string (and any walk error).
-func Run(copyFlag bool, dir, ext, match, unmatch string, verbose bool) (string, error) {
+func Run(copyFlag bool, dir, ext, match, unmatch string, cmd bool) (string, error) {
 	if dir == "" {
 		dir = "."
 	}
@@ -34,19 +34,21 @@ func Run(copyFlag bool, dir, ext, match, unmatch string, verbose bool) (string, 
 		relPath = filepath.ToSlash(relPath)
 
 		// Skip if directory / hidden / .gitignore says so
-		if shouldSkip(relPath, info, ig, verbose) {
+		if shouldSkip(relPath, info, ig, cmd) {
 			if info.IsDir() {
 				return filepath.SkipDir
 			}
 			return nil
 		}
 		// Check filters, then append Markdown
-		if !info.IsDir() && passFilters(relPath, exts, matches, unmatches, verbose) {
-			// Log matched file (always displayed, even if verbose == false)
-			fmt.Println("Matched file:", relPath)
+		if !info.IsDir() && passFilters(relPath, exts, matches, unmatches, cmd) {
+			// Log matched file (always displayed, even if cmd == false)
+			if cmd {
+				fmt.Println("Matched file:", relPath)
+			}
 
 			out.WriteString(fmt.Sprintf("\nFile: %s\n```%s\n", relPath, langID(filepath.Ext(path))))
-			appendFile(path, &out, verbose)
+			appendFile(path, &out, cmd)
 			out.WriteString("```\n")
 		}
 		return nil
@@ -54,8 +56,8 @@ func Run(copyFlag bool, dir, ext, match, unmatch string, verbose bool) (string, 
 		return "", err
 	}
 	if copyFlag {
-		if err := clipboard.WriteAll(out.String()); err != nil && verbose {
-			fmt.Println("Clipboard error:", err)
+		if err := clipboard.WriteAll(out.String()); err != nil && cmd {
+			return out.String(), err
 		}
 	}
 	return out.String(), nil
@@ -70,16 +72,16 @@ func loadGitignore(path string) *ignore.GitIgnore {
 	return nil
 }
 
-func shouldSkip(relPath string, info os.FileInfo, ig *ignore.GitIgnore, verbose bool) bool {
+func shouldSkip(relPath string, info os.FileInfo, ig *ignore.GitIgnore, cmd bool) bool {
 	if ig != nil && ig.MatchesPath(relPath) {
-		if verbose {
+		if cmd {
 			fmt.Println("Skipping (gitignore):", relPath)
 		}
 		return true
 	}
 	// Hidden directories (except ".")
 	if info.IsDir() && relPath != "." && strings.HasPrefix(filepath.Base(relPath), ".") {
-		if verbose {
+		if cmd {
 			fmt.Println("Skipping hidden directory:", relPath)
 		}
 		return true
@@ -87,12 +89,12 @@ func shouldSkip(relPath string, info os.FileInfo, ig *ignore.GitIgnore, verbose 
 	return false
 }
 
-func passFilters(path string, exts, matches, unmatches []string, verbose bool) bool {
+func passFilters(path string, exts, matches, unmatches []string, cmd bool) bool {
 	// If exts given, file ext must be in that list
 	if len(exts) > 0 {
 		fileExt := strings.TrimPrefix(filepath.Ext(path), ".")
 		if !contains(exts, fileExt) {
-			if verbose {
+			if cmd {
 				fmt.Println("No match (ext):", path)
 			}
 			return false
@@ -101,7 +103,7 @@ func passFilters(path string, exts, matches, unmatches []string, verbose bool) b
 	// Must contain all matches
 	for _, m := range matches {
 		if !strings.Contains(path, m) {
-			if verbose {
+			if cmd {
 				fmt.Printf("No match (missing '%s'): %s\n", m, path)
 			}
 			return false
@@ -110,7 +112,7 @@ func passFilters(path string, exts, matches, unmatches []string, verbose bool) b
 	// Must not contain any unmatches
 	for _, u := range unmatches {
 		if strings.Contains(path, u) {
-			if verbose {
+			if cmd {
 				fmt.Printf("No match (forbidden '%s'): %s\n", u, path)
 			}
 			return false
@@ -119,10 +121,10 @@ func passFilters(path string, exts, matches, unmatches []string, verbose bool) b
 	return true
 }
 
-func appendFile(path string, out *strings.Builder, verbose bool) {
+func appendFile(path string, out *strings.Builder, cmd bool) {
 	f, err := os.Open(path)
 	if err != nil {
-		if verbose {
+		if cmd {
 			fmt.Println("Open error:", err)
 		}
 		return
@@ -133,7 +135,7 @@ func appendFile(path string, out *strings.Builder, verbose bool) {
 	for sc.Scan() {
 		out.WriteString(sc.Text() + "\n")
 	}
-	if err := sc.Err(); err != nil && verbose {
+	if err := sc.Err(); err != nil && cmd {
 		fmt.Println("Read error:", err)
 	}
 }
