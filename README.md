@@ -2,23 +2,31 @@
 
 Copies files to the clipboard as markdown.
 
-## Install
+## Installation
 
-Download from [Releases](https://github.com/dropsite-ai/mdcopy/releases):
+### Homebrew (macOS or Compatible)
 
+If you use Homebrew, install mdcopy with:
 ```bash
-tar -xzf mdcopy_Darwin_arm64.tar.gz
-chmod +x mdcopy
-sudo mv mdcopy /usr/local/bin/
+brew tap dropsite-ai/homebrew-tap
+brew install mdcopy
 ```
 
-Or manually build and install:
+### Download Binaries
 
-```bash
-git clone git@github.com:dropsite-ai/mdcopy.git
-cd mdcopy
-make install
-```
+Grab the latest pre-built binaries from the [GitHub Releases](https://github.com/dropsite-ai/mdcopy/releases). Extract them, then run the `mdcopy` executable directly.
+
+### Build from Source
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/dropsite-ai/mdcopy.git
+   cd mdcopy
+   ```
+2. **Build using Go**:
+   ```bash
+   go build -o mdcopy cmd/main.go
+   ```
 
 ## Usage
 
