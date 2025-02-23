@@ -14,16 +14,12 @@ import (
 // Run scans 'dir' (defaults to "."), respecting .gitignore and hidden dirs,
 // then gathers matching files in Markdown fences. If copyFlag is true, results
 // go to the clipboard. Returns the full Markdown string (and any walk error).
-func Run(copyFlag bool, dir, ext, match, unmatch string, cmd bool) (string, error) {
+// Note: The ext, match, and unmatch filters are now provided as slices.
+func Run(copyFlag bool, dir string, exts, matches, unmatches []string, cmd bool) (string, error) {
 	if dir == "" {
 		dir = "."
 	}
 	ig := loadGitignore(filepath.Join(dir, ".gitignore"))
-
-	// Split comma-delimited filters
-	exts := splitCSV(ext)
-	matches := splitCSV(match)
-	unmatches := splitCSV(unmatch)
 
 	var out strings.Builder
 	if err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
@@ -33,16 +29,13 @@ func Run(copyFlag bool, dir, ext, match, unmatch string, cmd bool) (string, erro
 		relPath, _ := filepath.Rel(dir, path)
 		relPath = filepath.ToSlash(relPath)
 
-		// Skip if directory / hidden / .gitignore says so
 		if shouldSkip(relPath, info, ig, cmd) {
 			if info.IsDir() {
 				return filepath.SkipDir
 			}
 			return nil
 		}
-		// Check filters, then append Markdown
 		if !info.IsDir() && passFilters(relPath, exts, matches, unmatches, cmd) {
-			// Log matched file (always displayed, even if cmd == false)
 			if cmd {
 				fmt.Println("Matched file:", relPath)
 			}
@@ -79,7 +72,7 @@ func shouldSkip(relPath string, info os.FileInfo, ig *ignore.GitIgnore, cmd bool
 		}
 		return true
 	}
-	// Hidden directories (except ".")
+	// Skip hidden directories (except ".")
 	if info.IsDir() && relPath != "." && strings.HasPrefix(filepath.Base(relPath), ".") {
 		if cmd {
 			fmt.Println("Skipping hidden directory:", relPath)
@@ -90,7 +83,7 @@ func shouldSkip(relPath string, info os.FileInfo, ig *ignore.GitIgnore, cmd bool
 }
 
 func passFilters(path string, exts, matches, unmatches []string, cmd bool) bool {
-	// If exts given, file ext must be in that list
+	// If exts given, file extension must be in that list.
 	if len(exts) > 0 {
 		fileExt := strings.TrimPrefix(filepath.Ext(path), ".")
 		if !contains(exts, fileExt) {
@@ -100,16 +93,23 @@ func passFilters(path string, exts, matches, unmatches []string, cmd bool) bool 
 			return false
 		}
 	}
-	// Must contain all matches
-	for _, m := range matches {
-		if !strings.Contains(path, m) {
+	// If match filters are provided, accept if at least one is found.
+	if len(matches) > 0 {
+		matchFound := false
+		for _, m := range matches {
+			if strings.Contains(path, m) {
+				matchFound = true
+				break
+			}
+		}
+		if !matchFound {
 			if cmd {
-				fmt.Printf("No match (missing '%s'): %s\n", m, path)
+				fmt.Println("No match (none of the match patterns found):", path)
 			}
 			return false
 		}
 	}
-	// Must not contain any unmatches
+	// Exclude if any unmatch filter is present.
 	for _, u := range unmatches {
 		if strings.Contains(path, u) {
 			if cmd {
@@ -151,14 +151,6 @@ func langID(ext string) string {
 		return "python"
 	case "rb":
 		return "ruby"
-	case "html":
-		return "html"
-	case "css":
-		return "css"
-	case "json":
-		return "json"
-	case "xml":
-		return "xml"
 	case "sh":
 		return "bash"
 	case "md":
@@ -169,17 +161,6 @@ func langID(ext string) string {
 		}
 		return ext
 	}
-}
-
-func splitCSV(s string) []string {
-	var list []string
-	for _, p := range strings.Split(s, ",") {
-		p = strings.TrimSpace(p)
-		if p != "" {
-			list = append(list, p)
-		}
-	}
-	return list
 }
 
 func contains(ss []string, val string) bool {

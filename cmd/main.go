@@ -8,21 +8,37 @@ import (
 	"github.com/dropsite-ai/mdcopy"
 )
 
+// stringSlice collects multiple flag values.
+type stringSlice []string
+
+func (s *stringSlice) String() string {
+	return fmt.Sprint(*s)
+}
+
+func (s *stringSlice) Set(value string) error {
+	*s = append(*s, value)
+	return nil
+}
+
 func main() {
 	copyFlag := flag.Bool("copy", true, "Copy results to clipboard")
 	dirFlag := flag.String("dir", ".", "Change starting directory")
-	extFlag := flag.String("ext", "", "Comma-separated file extensions (e.g. go,txt)")
-	matchFlag := flag.String("match", "", "Comma-separated substrings that paths must match")
-	unmatchFlag := flag.String("unmatch", "", "Comma-separated substrings that paths must not match")
+
+	var extFlags stringSlice
+	flag.Var(&extFlags, "ext", "File extension filter. Specify multiple times for multiple extensions.")
+	var matchFlags stringSlice
+	flag.Var(&matchFlags, "match", "Substring filter for inclusion. Specify multiple times (file is included if any match).")
+	var unmatchFlags stringSlice
+	flag.Var(&unmatchFlags, "unmatch", "Substring filter for exclusion. Specify multiple times.")
 
 	flag.Parse()
 
 	out, err := mdcopy.Run(
 		*copyFlag,
 		*dirFlag,
-		*extFlag,
-		*matchFlag,
-		*unmatchFlag,
+		extFlags,
+		matchFlags,
+		unmatchFlags,
 		true,
 	)
 	if err != nil {
