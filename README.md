@@ -8,6 +8,12 @@ Copies files to the clipboard as markdown.
 
 ## Installation
 
+### Go Package
+
+```bash
+go get github.com/dropsite-ai/mdcopy
+```
+
 ### Homebrew (macOS or Compatible)
 
 If you use Homebrew, install mdcopy with:
